@@ -410,22 +410,37 @@ function setSyncStatus(status) {
 
 async function apiGet() {
   if (!API_URL) return [];
-  const res = await fetch(API_URL + '?action=list');
-  const json = await res.json();
-  if (json.success) return json.data;
-  throw new Error(json.error || 'Error al cargar');
+  // Google Apps Script hace redirect 302, necesitamos redirect: follow y sin headers custom
+  const res = await fetch(API_URL + '?action=list', { redirect: 'follow' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  try {
+    const json = JSON.parse(text);
+    if (json.success) return json.data;
+    throw new Error(json.error || 'Error al cargar');
+  } catch(e) {
+    if (e instanceof SyntaxError) throw new Error('Respuesta no válida del servidor. Verificá que el Apps Script esté deployado correctamente.');
+    throw e;
+  }
 }
 
 async function apiPost(action, data) {
   if (!API_URL) { toast('Configurá la URL del Apps Script primero'); return null; }
   setSyncStatus('loading');
   try {
+    // NO enviar Content-Type header para evitar CORS preflight
+    // Google Apps Script redirige y el preflight falla con headers custom
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' }, // Apps Script quirk
+      redirect: 'follow',
       body: JSON.stringify({ action, ...data })
     });
-    const json = await res.json();
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch(e) {
+      throw new Error('Respuesta no válida. Verificá el deploy del Apps Script.');
+    }
     setSyncStatus('ok');
     if (json.success) return json;
     throw new Error(json.error || 'Error');
