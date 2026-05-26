@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seguimiento de Ensayos Tercerizados - I+D Semillas</title>
+<style>
+  :root {
+    --green-900: #1a3a1a; --green-800: #1e4d2b; --green-700: #2d6a3f;
+    --green-600: #3a8a52; --green-500: #4caf50; --green-400: #6ec472;
+    --green-300: #98d89b; --green-200: #c3e8c5; --green-100: #e8f5e9; --green-50: #f1f8f2;
+    --amber-600: #f59e0b; --amber-100: #fef3c7;
+    --red-600: #dc2626; --red-100: #fee2e2;
+    --blue-600: #2563eb; --blue-100: #dbeafe;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-300: #d1d5db;
+    --gray-400: #9ca3af; --gray-500: #6b7280; --gray-600: #4b5563;
+    --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+    --radius: 8px; --radius-lg: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gray-50); color: var(--gray-800); line-height: 1.5; }
+
+  .header { background: linear-gradient(135deg, var(--green-800), var(--green-700)); color: white; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 100; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; }
+  .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .btn { padding: 8px 16px; border-radius: var(--radius); border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .btn-primary { background: var(--green-600); color: white; }
+  .btn-primary:hover { background: var(--green-700); }
+  .btn-secondary { background: white; color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .btn-secondary:hover { background: var(--gray-100); }
+  .btn-danger { background: var(--red-600); color: white; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--gray-300); background: white; cursor: pointer; color: var(--gray-600); }
+  .btn-icon:hover { background: var(--gray-100); }
+  .btn-header { color:white; border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); }
+
+  .tabs { display: flex; gap: 0; background: white; border-bottom: 1px solid var(--gray-200); padding: 0 32px; }
+  .tab { padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab:hover { color: var(--gray-700); }
+  .tab.active { color: var(--green-700); border-bottom-color: var(--green-600); }
+
+  .main { padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
+
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .summary-card { background: white; border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); }
+  .summary-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); margin-bottom: 4px; }
+  .summary-card .value { font-size: 28px; font-weight: 700; color: var(--gray-900); }
+  .summary-card .detail { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+  .summary-card.highlight { border-left: 4px solid var(--green-500); }
+  .summary-card.warning { border-left: 4px solid var(--amber-600); }
+  .summary-card.info { border-left: 4px solid var(--blue-600); }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .toolbar-left { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search-box { padding: 8px 12px 8px 34px; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 13px; width: 260px; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 10px center; }
+  .search-box:focus { outline: none; border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
+  .filter-select { padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 13px; background: white; }
+
+  .table-container { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); background: var(--gray-50); border-bottom: 1px solid var(--gray-200); white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--gray-700); }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+  tr:hover td { background: var(--green-50); }
+  tr.clickable { cursor: pointer; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-planificado { background: var(--gray-200); color: var(--gray-700); }
+  .badge-siembra { background: #dbeafe; color: #1d4ed8; }
+  .badge-crecimiento { background: var(--green-200); color: var(--green-800); }
+  .badge-evaluacion { background: #fef3c7; color: #92400e; }
+  .badge-cosecha { background: #fce7f3; color: #9d174d; }
+  .badge-analisis { background: #e0e7ff; color: #3730a3; }
+  .badge-finalizado { background: var(--green-100); color: var(--green-800); }
+  .badge-cancelado { background: var(--red-100); color: var(--red-600); }
+
+  .pago-bar { width: 100px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .pago-bar-fill { height: 100%; background: var(--green-500); border-radius: 3px; }
+
+  .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; min-height: 400px; }
+  .kanban-column { min-width: 260px; max-width: 300px; flex: 1; background: var(--gray-100); border-radius: var(--radius-lg); padding: 12px; display: flex; flex-direction: column; }
+  .kanban-column-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px; }
+  .kanban-column-title { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .kanban-count { background: var(--gray-300); color: var(--gray-700); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .kanban-card { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); cursor: pointer; transition: all 0.15s; }
+  .kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .kanban-card-title { font-size: 13px; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; }
+  .kanban-card-institution { font-size: 12px; color: var(--gray-500); margin-bottom: 8px; }
+  .kanban-card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--gray-400); }
+  .kanban-card-crop { background: var(--green-100); color: var(--green-800); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .kanban-card.overdue { border-left: 3px solid var(--red-600); }
+  .kanban-card.near-due { border-left: 3px solid var(--amber-600); }
+
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; border-radius: var(--radius-lg) var(--radius-lg) 0 0; z-index: 1; }
+  .modal-header h2 { font-size: 18px; font-weight: 600; }
+  .modal-close { width: 32px; height: 32px; border: none; background: none; font-size: 20px; cursor: pointer; color: var(--gray-400); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { background: var(--gray-100); color: var(--gray-600); }
+  .modal-body { padding: 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: white; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+  .form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+  .form-section-title { font-size: 14px; font-weight: 600; color: var(--green-800); padding-bottom: 8px; border-bottom: 1px solid var(--gray-200); margin-top: 16px; margin-bottom: 8px; grid-column: 1 / -1; }
+
+  .detail-section { margin-bottom: 24px; }
+  .detail-section h3 { font-size: 14px; font-weight: 600; color: var(--green-800); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--gray-200); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .detail-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); margin-bottom: 2px; }
+  .detail-item .value { font-size: 14px; color: var(--gray-800); font-weight: 500; }
+
+  .result-entry { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 12px; margin-bottom: 8px; }
+  .result-entry .date { font-size: 11px; color: var(--gray-500); margin-bottom: 4px; }
+  .result-entry .text { font-size: 13px; color: var(--gray-700); }
+
+  .payment-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+  .payment-row .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .payment-row .status-dot.paid { background: var(--green-500); }
+
+  .drive-link-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: 6px; font-size: 13px; }
+  .drive-link-item a { color: var(--green-700); text-decoration: none; font-weight: 500; flex: 1; }
+  .drive-link-item a:hover { text-decoration: underline; }
+  .drive-link-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; background: #dbeafe; color: #2563eb; }
+
+  .logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .alert-dot { width: 8px; height: 8px; background: var(--red-600); border-radius: 50%; display: inline-block; margin-right: 4px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; flex-direction: column; gap: 12px; }
+  .loading-overlay .spinner { width: 40px; height: 40px; border: 4px solid var(--gray-200); border-top-color: var(--green-600); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay p { font-size: 14px; color: var(--gray-600); }
+
+  .sync-indicator { font-size: 11px; padding: 4px 10px; border-radius: 12px; }
+  .sync-ok { background: rgba(76,175,80,0.2); color: #fff; }
+  .sync-error { background: rgba(220,38,38,0.3); color: #fff; }
+  .sync-loading { background: rgba(245,158,11,0.3); color: #fff; }
+
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--gray-800); color: white; padding: 12px 20px; border-radius: var(--radius); font-size: 13px; box-shadow: var(--shadow-lg); animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .hidden { display: none !important; }
+
+  .config-banner { background: #fef3c7; border: 1px solid #f59e0b; border-radius: var(--radius); padding: 16px 24px; margin-bottom: 20px; font-size: 13px; color: #92400e; }
+  .config-banner code { background: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+  @media (max-width: 768px) {
+    .header { padding: 12px 16px; }
+    .main { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .summary-cards { grid-template-columns: 1fr 1fr; }
+    .search-box { width: 100%; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <p>Cargando ensayos...</p>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-icon">&#127793;</div>
+    <div>
+      <h1>Seguimiento de Ensayos Tercerizados</h1>
+      <div class="subtitle">I+D - Gestión de Ensayos con Instituciones</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="syncStatus" class="sync-indicator sync-ok">&#9679; Conectado</span>
+    <input type="text" id="campaignSelect" list="campaignHeaderList" value="2025/26" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;font-size:13px;padding:6px 14px;border-radius:20px;width:140px;text-align:center;" placeholder="Campaña...">
+    <datalist id="campaignHeaderList"></datalist>
+    <button class="btn btn-primary" onclick="openNewTrialModal()">+ Nuevo Ensayo</button>
+    <button class="btn btn-secondary btn-header" onclick="exportCSV()">&#8681; CSV</button>
+    <button class="btn btn-secondary btn-header" onclick="loadTrials()">&#8635; Recargar</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-view="dashboard" onclick="switchView('dashboard')">&#9632; Dashboard</div>
+  <div class="tab" data-view="kanban" onclick="switchView('kanban')">&#9636; Kanban</div>
+  <div class="tab" data-view="table" onclick="switchView('table')">&#9776; Tabla</div>
+</div>
+
+<div class="main">
+  <div id="configBanner" class="config-banner hidden">
+    &#9888; <strong>Configuración pendiente:</strong> Necesitás pegar la URL de tu Google Apps Script en la variable <code>API_URL</code> del HTML para conectar con la planilla. Consultá la guía de configuración.
+  </div>
+
+  <div id="view-dashboard">
+    <div class="summary-cards" id="summaryCards"></div>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-box" placeholder="Buscar ensayo, institución, cultivo..." id="searchBox" oninput="renderAll()">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--gray-700);">&#128680; Requieren Atención</h3>
+        <div id="alertsList"></div>
+      </div>
+      <div>
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--gray-700);">&#128197; Próximos Hitos</h3>
+        <div id="upcomingList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-kanban" class="hidden">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-box" placeholder="Buscar..." id="searchBoxKanban" oninput="renderAll()">
+        <input type="text" class="filter-select" id="filterCrop" list="filterCropList" placeholder="Filtrar cultivo..." oninput="renderAll()">
+        <datalist id="filterCropList"></datalist>
+        <input type="text" class="filter-select" id="filterInst" list="filterInstList" placeholder="Filtrar institución..." oninput="renderAll()">
+        <datalist id="filterInstList"></datalist>
+      </div>
+    </div>
+    <div class="kanban-board" id="kanbanBoard"></div>
+  </div>
+
+  <div id="view-table" class="hidden">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-box" placeholder="Buscar..." id="searchBoxTable" oninput="renderAll()">
+        <input type="text" class="filter-select" id="filterCropTable" list="filterCropTableList" placeholder="Filtrar cultivo..." oninput="renderAll()">
+        <datalist id="filterCropTableList"></datalist>
+        <input type="text" class="filter-select" id="filterStatusTable" list="filterStatusTableList" placeholder="Filtrar estado..." oninput="renderAll()">
+        <datalist id="filterStatusTableList"></datalist>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('code')">Código</th>
+          <th onclick="sortBy('name')">Ensayo</th>
+          <th onclick="sortBy('crop')">Cultivo</th>
+          <th onclick="sortBy('institution')">Institución</th>
+          <th onclick="sortBy('status')">Estado</th>
+          <th onclick="sortBy('nextMilestone')">Próximo Hito</th>
+          <th onclick="sortBy('budgetPct')">Pagos</th>
+          <th>Acciones</th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nuevo/Editar Ensayo -->
+<div class="modal-overlay" id="trialModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nuevo Ensayo</h2>
+      <button class="modal-close" onclick="closeTrialModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-section-title">Información General</div>
+        <div class="form-group"><label>Código de Ensayo *</label><input type="text" id="f_code" placeholder="Ej: ENS-2526-001"></div>
+        <div class="form-group"><label>Nombre del Ensayo *</label><input type="text" id="f_name" placeholder="Ej: Evaluación de rinde híbridos de maíz"></div>
+        <div class="form-group"><label>Cultivo *</label><input type="text" id="f_crop" placeholder="Ej: Soja, Maíz, Trigo..." list="cropList"><datalist id="cropList"></datalist></div>
+        <div class="form-group"><label>Tipo de Ensayo</label><input type="text" id="f_type" placeholder="Ej: Comparativo de rendimiento..." list="typeList"><datalist id="typeList"></datalist></div>
+        <div class="form-group full"><label>Objetivo</label><textarea id="f_objective" rows="2" placeholder="Descripción breve del objetivo..."></textarea></div>
+
+        <div class="form-section-title">Institución y Contacto</div>
+        <div class="form-group"><label>Institución *</label><input type="text" id="f_institution" placeholder="Ej: FAUBA, UNR, INTA Pergamino" list="instList"><datalist id="instList"></datalist></div>
+        <div class="form-group"><label>Investigador de Contacto</label><input type="text" id="f_contact" placeholder="Nombre completo"></div>
+        <div class="form-group"><label>Email de Contacto</label><input type="email" id="f_email" placeholder="email@universidad.edu.ar"></div>
+        <div class="form-group"><label>Teléfono</label><input type="text" id="f_phone" placeholder="+54 ..."></div>
+        <div class="form-group"><label>N° de Convenio</label><input type="text" id="f_agreement" placeholder="Referencia del convenio"></div>
+        <div class="form-group"><label>Localidad del Ensayo</label><input type="text" id="f_location" placeholder="Ej: Pergamino, Buenos Aires"></div>
+
+        <div class="form-section-title">Cronograma</div>
+        <div class="form-group"><label>Estado Actual *</label><input type="text" id="f_status" placeholder="Ej: Planificado, Siembra..." list="statusList" value="Planificado"><datalist id="statusList"></datalist></div>
+        <div class="form-group"><label>Campaña</label><input type="text" id="f_campaign" placeholder="Ej: 2025/26" list="campaignList"><datalist id="campaignList"></datalist></div>
+        <div class="form-group"><label>Fecha de Siembra</label><input type="date" id="f_dateSiembra"></div>
+        <div class="form-group"><label>Fecha de Cosecha</label><input type="date" id="f_dateCosecha"></div>
+        <div class="form-group"><label>Fecha Entrega Resultados</label><input type="date" id="f_dateResults"></div>
+        <div class="form-group"><label>Próximo Hito</label><input type="text" id="f_nextMilestone" placeholder="Ej: Envío informe parcial"></div>
+        <div class="form-group"><label>Fecha del Próximo Hito</label><input type="date" id="f_nextMilestoneDate"></div>
+
+        <div class="form-section-title">Presupuesto</div>
+        <div class="form-group"><label>Monto Total (ARS)</label><input type="number" id="f_budget" placeholder="0"></div>
+        <div class="form-group"><label>Monto Pagado (ARS)</label><input type="number" id="f_paid" placeholder="0"></div>
+
+        <div class="form-section-title">Notas</div>
+        <div class="form-group full"><label>Observaciones</label><textarea id="f_notes" rows="3" placeholder="Notas adicionales..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeTrialModal()">Cancelar</button>
+      <button class="btn btn-primary" id="saveTrialBtn" onclick="saveTrial()">Guardar Ensayo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Detalle del Ensayo -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:800px;">
+    <div class="modal-header">
+      <h2 id="detailTitle">Detalle del Ensayo</h2>
+      <button class="modal-close" onclick="closeModal('detailModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="deleteTrial(viewingTrialId)" style="margin-right:auto;">Eliminar</button>
+      <button class="btn btn-secondary" onclick="closeModal('detailModal')">Cerrar</button>
+      <button class="btn btn-primary" onclick="editCurrentTrial()">Editar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Agregar Resultado -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header"><h2>Agregar Resultado / Observación</h2><button class="modal-close" onclick="closeModal('resultModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>Fecha</label><input type="date" id="r_date"></div>
+        <div class="form-group"><label>Tipo</label><input type="text" id="r_type" placeholder="Ej: Observación de campo..." list="resultTypeList" value="Observación de campo"><datalist id="resultTypeList"></datalist></div>
+        <div class="form-group"><label>Descripción *</label><textarea id="r_text" rows="4" placeholder="Describir el resultado u observación..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('resultModal')">Cancelar</button><button class="btn btn-primary" onclick="saveResult()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Registrar Pago -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header"><h2>Registrar Pago</h2><button class="modal-close" onclick="closeModal('paymentModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>Fecha del Pago</label><input type="date" id="p_date"></div>
+        <div class="form-group"><label>Monto (ARS) *</label><input type="number" id="p_amount" placeholder="0"></div>
+        <div class="form-group"><label>Concepto</label><input type="text" id="p_concept" placeholder="Ej: Anticipo, Cuota 2..."></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('paymentModal')">Cancelar</button><button class="btn btn-primary" onclick="savePayment()">Registrar Pago</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Agregar Link de Drive -->
+<div class="modal-overlay" id="driveLinkModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header"><h2>Agregar Archivo (Link de Google Drive)</h2><button class="modal-close" onclick="closeModal('driveLinkModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>Nombre del archivo *</label><input type="text" id="dl_name" placeholder="Ej: Protocolo ensayo maíz 2025.pdf"></div>
+        <div class="form-group"><label>URL de Google Drive *</label><input type="url" id="dl_url" placeholder="https://drive.google.com/file/d/..."></div>
+        <div class="form-group"><label>Tipo</label><input type="text" id="dl_type" placeholder="Ej: Protocolo, Reporte, Informe..." list="dlTypeList" value="Protocolo"><datalist id="dlTypeList"><option value="Protocolo"><option value="Reporte"><option value="Informe parcial"><option value="Informe final"><option value="Planilla de datos"><option value="Foto/Imagen"><option value="Otro"></datalist></div>
+      </div>
+      <p style="font-size:12px;color:var(--gray-500);margin-top:12px;">&#128161; Subí el archivo a una carpeta compartida de Google Drive, hacé click derecho > "Obtener enlace" > "Cualquier persona con el enlace puede ver", y pegá el link acá.</p>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('driveLinkModal')">Cancelar</button><button class="btn btn-primary" onclick="saveDriveLink()">Agregar Link</button></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN - Pegá acá la URL de tu Google Apps Script
+// ============================================================
+const API_URL = 'https://script.google.com/a/macros/peman.com.ar/s/AKfycbwC2E2zT5hJ637CXkGNZN0Mz-qdSJAvWCuvZ7IzL1kd-LmN2lpU_9wiupqNvAmRknMBag/exec'; // <-- PEGAR URL ACA después del deploy
+// ============================================================
+
+const STATUS_CLASSES = {
+  'Planificado':'badge-planificado','Siembra':'badge-siembra','Crecimiento':'badge-crecimiento',
+  'Evaluación':'badge-evaluacion','Cosecha':'badge-cosecha','Análisis':'badge-analisis',
+  'Finalizado':'badge-finalizado','Cancelado':'badge-cancelado'
+};
+
+let trials = [];
+let currentView = 'dashboard';
+let editingTrialId = null;
+let viewingTrialId = null;
+let sortField = 'code';
+let sortAsc = true;
+let resultTrialId = null;
+let paymentTrialId = null;
+let driveLinkTrialId = null;
+
+// ==================== API ====================
+function setSyncStatus(status) {
+  const el = document.getElementById('syncStatus');
+  el.className = 'sync-indicator sync-' + status;
+  el.innerHTML = status === 'ok' ? '&#9679; Conectado' : status === 'error' ? '&#9679; Error' : '&#9679; Guardando...';
+}
+
+async function apiGet() {
+  if (!API_URL) return [];
+  const res = await fetch(API_URL + '?action=list');
+  const json = await res.json();
+  if (json.success) return json.data;
+  throw new Error(json.error || 'Error al cargar');
+}
+
+async function apiPost(action, data) {
+  if (!API_URL) { toast('Configurá la URL del Apps Script primero'); return null; }
+  setSyncStatus('loading');
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // Apps Script quirk
+      body: JSON.stringify({ action, ...data })
+    });
+    const json = await res.json();
+    setSyncStatus('ok');
+    if (json.success) return json;
+    throw new Error(json.error || 'Error');
+  } catch(e) {
+    setSyncStatus('error');
+    throw e;
+  }
+}
+
+async function loadTrials() {
+  try {
+    if (!API_URL) {
+      document.getElementById('configBanner').classList.remove('hidden');
+      document.getElementById('loadingOverlay').style.display = 'none';
+      trials = getSampleData();
+      renderAll();
+      return;
+    }
+    document.getElementById('configBanner').classList.add('hidden');
+    setSyncStatus('loading');
+    trials = await apiGet();
+    // Parse JSON fields if they're still strings
+    trials.forEach(t => {
+      if (typeof t.results === 'string') try { t.results = JSON.parse(t.results); } catch(e) { t.results = []; }
+      if (typeof t.payments === 'string') try { t.payments = JSON.parse(t.payments); } catch(e) { t.payments = []; }
+      if (typeof t.driveLinks === 'string') try { t.driveLinks = JSON.parse(t.driveLinks); } catch(e) { t.driveLinks = []; }
+      if (!t.results) t.results = [];
+      if (!t.payments) t.payments = [];
+      if (!t.driveLinks) t.driveLinks = [];
+      t.budget = Number(t.budget) || 0;
+      t.paid = Number(t.paid) || 0;
+    });
+    setSyncStatus('ok');
+    renderAll();
+  } catch(e) {
+    setSyncStatus('error');
+    toast('Error al cargar: ' + e.message);
+    trials = [];
+    renderAll();
+  } finally {
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
+}
+
+function getSampleData() {
+  return [
+    { id:'demo1', code:'ENS-2526-001', name:'Evaluación de rinde híbridos de maíz - Zona Núcleo', crop:'Maíz', type:'Comparativo de rendimiento', objective:'Evaluar 12 híbridos experimentales de maíz en Zona Núcleo.', institution:'FAUBA', contact:'Dr. Martín Salvagiotti', email:'msalvagiotti@agro.uba.ar', phone:'+54 11 4524-8000', agreement:'CONV-2025-042', location:'Pergamino, Buenos Aires', status:'Crecimiento', campaign:'2025/26', dateSiembra:'2025-10-15', dateCosecha:'2026-03-20', dateResults:'2026-05-15', nextMilestone:'Evaluación en floración', nextMilestoneDate:'2026-01-10', budget:4500000, paid:2250000, notes:'DBCA, 3 repeticiones.', results:[{date:'2025-10-16',type:'Observación',text:'Siembra OK'},{date:'2025-12-15',type:'Dato',text:'Medición V8'}], payments:[{date:'2025-09-01',amount:2250000,concept:'Anticipo 50%'}], driveLinks:[] },
+    { id:'demo2', code:'ENS-2526-002', name:'Comportamiento sanitario soja', crop:'Soja', type:'Comportamiento sanitario', objective:'Evaluar EFC en 20 variedades.', institution:'UNR', contact:'Dra. Laura Giorda', email:'lgiorda@unr.edu.ar', phone:'', agreement:'CONV-2025-038', location:'Zavalla, Santa Fe', status:'Evaluación', campaign:'2025/26', dateSiembra:'2025-11-05', dateCosecha:'2026-04-10', dateResults:'2026-06-30', nextMilestone:'Informe parcial EFC', nextMilestoneDate:'2026-03-15', budget:3800000, paid:1900000, notes:'', results:[], payments:[{date:'2025-10-01',amount:1900000,concept:'Anticipo 50%'}], driveLinks:[] }
+  ];
+}
+
+// ==================== UTILS ====================
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function getBadgeClass(s) { return STATUS_CLASSES[s] || 'badge-planificado'; }
+function formatMoney(n) { return n ? '$' + n.toLocaleString('es-AR') : '$0'; }
+function formatDate(d) { if (!d) return '-'; const p = d.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d; }
+function daysUntil(ds) { if (!ds) return Infinity; return Math.ceil((new Date(ds+'T00:00:00') - new Date(new Date().toDateString())) / 86400000); }
+function toast(msg) { const c=document.getElementById('toastContainer'),t=document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
+
+function getSearchTerm() {
+  if (currentView==='dashboard') return document.getElementById('searchBox').value.toLowerCase();
+  if (currentView==='kanban') return document.getElementById('searchBoxKanban').value.toLowerCase();
+  return document.getElementById('searchBoxTable').value.toLowerCase();
+}
+
+function getFilteredTrials() {
+  const search = getSearchTerm();
+  const campaign = document.getElementById('campaignSelect').value.trim().toLowerCase();
+  let cropF='', statusF='', instF='';
+  if (currentView==='kanban') { cropF=document.getElementById('filterCrop').value.trim().toLowerCase(); instF=document.getElementById('filterInst').value.trim().toLowerCase(); }
+  else if (currentView==='table') { cropF=document.getElementById('filterCropTable').value.trim().toLowerCase(); statusF=document.getElementById('filterStatusTable').value.trim().toLowerCase(); }
+  return trials.filter(t => {
+    if (campaign && !t.campaign.toLowerCase().includes(campaign)) return false;
+    if (search && !([t.code,t.name,t.institution,t.crop,t.contact||'',t.location||''].some(v=>v.toLowerCase().includes(search)))) return false;
+    if (cropF && !t.crop.toLowerCase().includes(cropF)) return false;
+    if (statusF && !t.status.toLowerCase().includes(statusF)) return false;
+    if (instF && !t.institution.toLowerCase().includes(instF)) return false;
+    return true;
+  });
+}
+
+// ==================== RENDER ====================
+function switchView(v) {
+  currentView = v;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view===v));
+  ['dashboard','kanban','table'].forEach(id => document.getElementById('view-'+id).classList.toggle('hidden', id!==v));
+  renderAll();
+}
+
+function renderAll() { populateFilters(); renderSummary(); if(currentView==='dashboard'){renderAlerts();renderUpcoming();} if(currentView==='kanban')renderKanban(); if(currentView==='table')renderTable(); }
+
+function populateFilters() {
+  const allCrops=[...new Set(trials.map(t=>t.crop))].sort();
+  const allInsts=[...new Set(trials.map(t=>t.institution))].sort();
+  const allStatuses=[...new Set(trials.map(t=>t.status))].sort();
+  const allCampaigns=[...new Set(trials.map(t=>t.campaign))].sort().reverse();
+  const allTypes=[...new Set(trials.map(t=>t.type).filter(Boolean))].sort();
+  function fill(id,vals){const d=document.getElementById(id);if(d)d.innerHTML=vals.map(v=>`<option value="${v}">`).join('');}
+  fill('filterCropList',allCrops); fill('filterCropTableList',allCrops);
+  fill('filterInstList',allInsts); fill('filterStatusTableList',allStatuses);
+  fill('instList',allInsts); fill('cropList',allCrops); fill('typeList',allTypes);
+  fill('statusList',allStatuses.length?allStatuses:['Planificado','Siembra','Crecimiento','Evaluación','Cosecha','Análisis','Finalizado','Cancelado']);
+  fill('campaignList',allCampaigns); fill('campaignHeaderList',allCampaigns);
+  fill('resultTypeList',['Observación de campo','Dato de rendimiento','Informe recibido','Resultado de laboratorio']);
+}
+
+function renderSummary() {
+  const ft=getFilteredTrials(); const active=ft.filter(t=>!['Finalizado','Cancelado'].includes(t.status));
+  const overdue=active.filter(t=>t.nextMilestoneDate&&daysUntil(t.nextMilestoneDate)<0);
+  const totalBudget=ft.reduce((s,t)=>s+(t.budget||0),0); const totalPaid=ft.reduce((s,t)=>s+(t.paid||0),0);
+  document.getElementById('summaryCards').innerHTML=`
+    <div class="summary-card highlight"><div class="label">Ensayos Activos</div><div class="value">${active.length}</div><div class="detail">${ft.length} total en campaña</div></div>
+    <div class="summary-card ${overdue.length?'warning':''}"><div class="label">${overdue.length?'<span class="alert-dot"></span>':''}Requieren Atención</div><div class="value">${overdue.length}</div><div class="detail">Hitos vencidos</div></div>
+    <div class="summary-card info"><div class="label">Instituciones</div><div class="value">${new Set(ft.map(t=>t.institution)).size}</div><div class="detail">${new Set(ft.map(t=>t.crop)).size} cultivos</div></div>
+    <div class="summary-card"><div class="label">Presupuesto Total</div><div class="value" style="font-size:22px;">${formatMoney(totalBudget)}</div><div class="detail">${totalBudget?Math.round(totalPaid/totalBudget*100):0}% ejecutado (${formatMoney(totalPaid)})</div></div>`;
+}
+
+function renderAlerts() {
+  const ft=getFilteredTrials(); const active=ft.filter(t=>!['Finalizado','Cancelado'].includes(t.status));
+  const alerts=active.filter(t=>t.nextMilestoneDate&&daysUntil(t.nextMilestoneDate)<0).sort((a,b)=>daysUntil(a.nextMilestoneDate)-daysUntil(b.nextMilestoneDate));
+  const el=document.getElementById('alertsList');
+  if(!alerts.length){el.innerHTML='<div style="color:var(--gray-400);font-size:13px;padding:20px;">Todo al día.</div>';return;}
+  el.innerHTML=alerts.map(t=>`<div class="kanban-card overdue" onclick="openDetailModal('${t.id}')" style="margin-bottom:10px;"><div class="kanban-card-title">${t.code} - ${t.name}</div><div class="kanban-card-institution">${t.institution}</div><div style="font-size:12px;color:var(--red-600);">&#9888; "${t.nextMilestone}" vencido hace ${Math.abs(daysUntil(t.nextMilestoneDate))} días</div></div>`).join('');
+}
+
+function renderUpcoming() {
+  const ft=getFilteredTrials(); const active=ft.filter(t=>!['Finalizado','Cancelado'].includes(t.status));
+  const upcoming=active.filter(t=>t.nextMilestoneDate&&daysUntil(t.nextMilestoneDate)>=0).sort((a,b)=>daysUntil(a.nextMilestoneDate)-daysUntil(b.nextMilestoneDate)).slice(0,8);
+  const el=document.getElementById('upcomingList');
+  if(!upcoming.length){el.innerHTML='<div style="color:var(--gray-400);font-size:13px;padding:20px;">Sin hitos próximos.</div>';return;}
+  el.innerHTML=upcoming.map(t=>{const d=daysUntil(t.nextMilestoneDate);return`<div class="kanban-card ${d<=7?'near-due':''}" onclick="openDetailModal('${t.id}')" style="margin-bottom:10px;"><div class="kanban-card-title">${t.code} - ${t.nextMilestone||'Sin definir'}</div><div class="kanban-card-institution">${t.institution} &middot; <span class="badge ${getBadgeClass(t.status)}">${t.status}</span></div><div style="font-size:12px;color:${d<=7?'var(--amber-600)':'var(--gray-500)'};">&#128197; ${formatDate(t.nextMilestoneDate)} (en ${d} días)</div></div>`;}).join('');
+}
+
+function renderKanban() {
+  const ft=getFilteredTrials(); const board=document.getElementById('kanbanBoard');
+  const knownOrder=['Planificado','Siembra','Crecimiento','Evaluación','Cosecha','Análisis','Finalizado'];
+  const allS=[...new Set(ft.map(t=>t.status))]; const custom=allS.filter(s=>!knownOrder.includes(s)&&s!=='Cancelado');
+  const columns=[...knownOrder.filter(s=>allS.includes(s)),...custom];
+  board.innerHTML=columns.map(status=>{const cards=ft.filter(t=>t.status===status);return`<div class="kanban-column"><div class="kanban-column-header"><span class="kanban-column-title">${status}</span><span class="kanban-count">${cards.length}</span></div>${cards.length?cards.map(t=>{const d=daysUntil(t.nextMilestoneDate);return`<div class="kanban-card ${d<0?'overdue':d<=7?'near-due':''}" onclick="openDetailModal('${t.id}')"><div class="kanban-card-title">${t.code}</div><div style="font-size:12px;color:var(--gray-700);margin-bottom:6px;">${t.name.length>50?t.name.slice(0,50)+'...':t.name}</div><div class="kanban-card-institution">${t.institution}</div><div class="kanban-card-footer"><span class="kanban-card-crop">${t.crop}</span>${t.nextMilestoneDate?`<span>${formatDate(t.nextMilestoneDate)}</span>`:''}</div></div>`;}).join(''):'<div style="color:var(--gray-400);font-size:12px;text-align:center;padding:20px;">Sin ensayos</div>'}</div>`;}).join('');
+}
+
+function renderTable() {
+  let ft=getFilteredTrials();
+  ft.sort((a,b)=>{let va=a[sortField]||'',vb=b[sortField]||'';if(sortField==='budgetPct'){va=a.budget?a.paid/a.budget:0;vb=b.budget?b.paid/b.budget:0;}if(typeof va==='string')va=va.toLowerCase();if(typeof vb==='string')vb=vb.toLowerCase();return va<vb?(sortAsc?-1:1):va>vb?(sortAsc?1:-1):0;});
+  const tbody=document.getElementById('tableBody');
+  if(!ft.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400);">No se encontraron ensayos</td></tr>';return;}
+  tbody.innerHTML=ft.map(t=>{const pct=t.budget?Math.round(t.paid/t.budget*100):0;const d=daysUntil(t.nextMilestoneDate);const mc=d<0?'var(--red-600)':d<=7?'var(--amber-600)':'var(--gray-700)';return`<tr class="clickable" onclick="openDetailModal('${t.id}')"><td><strong>${t.code}</strong></td><td>${t.name.length>40?t.name.slice(0,40)+'...':t.name}</td><td><span class="kanban-card-crop">${t.crop}</span></td><td>${t.institution}</td><td><span class="badge ${getBadgeClass(t.status)}">${t.status}</span></td><td style="color:${mc};">${t.nextMilestone||'-'}${t.nextMilestoneDate?'<br><small>'+formatDate(t.nextMilestoneDate)+'</small>':''}</td><td><div class="pago-bar"><div class="pago-bar-fill" style="width:${pct}%"></div></div><span style="font-size:12px;">${pct}%</span></td><td style="white-space:nowrap;"><button class="btn-icon" onclick="event.stopPropagation();editTrial('${t.id}')" title="Editar">&#9998;</button><button class="btn-icon" onclick="event.stopPropagation();deleteTrial('${t.id}')" title="Eliminar" style="color:var(--red-600);margin-left:4px;">&#128465;</button></td></tr>`;}).join('');
+}
+
+function sortBy(f){if(sortField===f)sortAsc=!sortAsc;else{sortField=f;sortAsc=true;}renderTable();}
+
+// ==================== MODALS ====================
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function closeTrialModal(){const h=document.getElementById('f_code').value.trim()||document.getElementById('f_name').value.trim();if(h&&!confirm('¿Cerrar sin guardar?'))return;closeModal('trialModal');}
+
+function openNewTrialModal(){editingTrialId=null;document.getElementById('modalTitle').textContent='Nuevo Ensayo';document.getElementById('saveTrialBtn').textContent='Guardar Ensayo';clearForm();document.getElementById('f_campaign').value=document.getElementById('campaignSelect').value;openModal('trialModal');}
+
+function editTrial(id){editingTrialId=id;const t=trials.find(x=>x.id===id);if(!t)return;document.getElementById('modalTitle').textContent='Editar Ensayo';document.getElementById('saveTrialBtn').textContent='Actualizar';['code','name','crop','type','objective','institution','contact','email','phone','agreement','location','status','campaign','dateSiembra','dateCosecha','dateResults','nextMilestone','nextMilestoneDate','notes'].forEach(f=>{const el=document.getElementById('f_'+f);if(el)el.value=t[f]||'';});document.getElementById('f_budget').value=t.budget||'';document.getElementById('f_paid').value=t.paid||'';openModal('trialModal');}
+
+function editCurrentTrial(){closeModal('detailModal');if(viewingTrialId)editTrial(viewingTrialId);}
+
+function clearForm(){['f_code','f_name','f_objective','f_institution','f_contact','f_email','f_phone','f_agreement','f_location','f_dateSiembra','f_dateCosecha','f_dateResults','f_nextMilestone','f_nextMilestoneDate','f_budget','f_paid','f_notes'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('f_crop').value='';document.getElementById('f_type').value='';document.getElementById('f_status').value='Planificado';}
+
+async function saveTrial(){
+  const code=document.getElementById('f_code').value.trim();const name=document.getElementById('f_name').value.trim();
+  const crop=document.getElementById('f_crop').value.trim();const institution=document.getElementById('f_institution').value.trim();
+  const status=document.getElementById('f_status').value.trim();
+  if(!code||!name||!crop||!institution||!status){toast('Completá los campos obligatorios (*)');return;}
+  const data={code,name,crop,institution,status,type:document.getElementById('f_type').value,objective:document.getElementById('f_objective').value,contact:document.getElementById('f_contact').value,email:document.getElementById('f_email').value,phone:document.getElementById('f_phone').value,agreement:document.getElementById('f_agreement').value,location:document.getElementById('f_location').value,campaign:document.getElementById('f_campaign').value,dateSiembra:document.getElementById('f_dateSiembra').value,dateCosecha:document.getElementById('f_dateCosecha').value,dateResults:document.getElementById('f_dateResults').value,nextMilestone:document.getElementById('f_nextMilestone').value,nextMilestoneDate:document.getElementById('f_nextMilestoneDate').value,budget:parseFloat(document.getElementById('f_budget').value)||0,paid:parseFloat(document.getElementById('f_paid').value)||0,notes:document.getElementById('f_notes').value};
+  try{
+    if(editingTrialId){data.id=editingTrialId;const t=trials.find(x=>x.id===editingTrialId);data.results=t?t.results:[];data.payments=t?t.payments:[];data.driveLinks=t?t.driveLinks:[];await apiPost('update',{data});toast('Ensayo actualizado');}
+    else{data.id=generateId();data.results=[];data.payments=[];data.driveLinks=[];await apiPost('create',{data});toast('Ensayo creado');}
+    closeModal('trialModal');await loadTrials();
+  }catch(e){toast('Error al guardar: '+e.message);}
+}
+
+async function deleteTrial(id){
+  const t=trials.find(x=>x.id===id);if(!t)return;
+  if(!confirm(`¿Eliminar "${t.code} - ${t.name}"?\n\nEsta acción no se puede deshacer.`))return;
+  try{await apiPost('delete',{id});closeModal('detailModal');toast('Ensayo eliminado');await loadTrials();}catch(e){toast('Error: '+e.message);}
+}
+
+function openDetailModal(id){
+  viewingTrialId=id;const t=trials.find(x=>x.id===id);if(!t)return;
+  document.getElementById('detailTitle').textContent=t.code+' - '+t.name;
+  const pct=t.budget?Math.round(t.paid/t.budget*100):0;const remaining=(t.budget||0)-(t.paid||0);
+  let html=`
+    <div class="detail-section"><h3>&#127793; Información General</h3><div class="detail-grid">
+      <div class="detail-item"><div class="label">Cultivo</div><div class="value"><span class="kanban-card-crop">${t.crop}</span></div></div>
+      <div class="detail-item"><div class="label">Tipo</div><div class="value">${t.type||'-'}</div></div>
+      <div class="detail-item"><div class="label">Estado</div><div class="value"><span class="badge ${getBadgeClass(t.status)}">${t.status}</span></div></div>
+      <div class="detail-item"><div class="label">Campaña</div><div class="value">${t.campaign}</div></div>
+      <div class="detail-item" style="grid-column:1/-1"><div class="label">Objetivo</div><div class="value" style="font-weight:400">${t.objective||'-'}</div></div>
+      <div class="detail-item"><div class="label">Localidad</div><div class="value">${t.location||'-'}</div></div>
+      <div class="detail-item"><div class="label">N° Convenio</div><div class="value">${t.agreement||'-'}</div></div>
+    </div></div>
+    <div class="detail-section"><h3>&#127963; Institución y Contacto</h3><div class="detail-grid">
+      <div class="detail-item"><div class="label">Institución</div><div class="value">${t.institution}</div></div>
+      <div class="detail-item"><div class="label">Investigador</div><div class="value">${t.contact||'-'}</div></div>
+      <div class="detail-item"><div class="label">Email</div><div class="value">${t.email?`<a href="mailto:${t.email}" style="color:var(--green-700)">${t.email}</a>`:'-'}</div></div>
+      <div class="detail-item"><div class="label">Teléfono</div><div class="value">${t.phone||'-'}</div></div>
+    </div></div>
+    <div class="detail-section"><h3>&#128197; Cronograma</h3><div class="detail-grid">
+      <div class="detail-item"><div class="label">Siembra</div><div class="value">${formatDate(t.dateSiembra)}</div></div>
+      <div class="detail-item"><div class="label">Cosecha</div><div class="value">${formatDate(t.dateCosecha)}</div></div>
+      <div class="detail-item"><div class="label">Entrega Resultados</div><div class="value">${formatDate(t.dateResults)}</div></div>
+      <div class="detail-item"><div class="label">Próximo Hito</div><div class="value">${t.nextMilestone||'-'} ${t.nextMilestoneDate?'('+formatDate(t.nextMilestoneDate)+')':''}</div></div>
+    </div></div>
+    <div class="detail-section"><h3>&#128176; Presupuesto y Pagos <button class="btn btn-sm btn-secondary" style="float:right" onclick="openPaymentModal('${t.id}')">+ Registrar Pago</button></h3>
+      <div class="detail-grid" style="margin-bottom:12px;">
+        <div class="detail-item"><div class="label">Monto Total</div><div class="value">${formatMoney(t.budget)}</div></div>
+        <div class="detail-item"><div class="label">Pagado</div><div class="value">${formatMoney(t.paid)} (${pct}%)</div></div>
+        <div class="detail-item"><div class="label">Pendiente</div><div class="value" style="color:${remaining>0?'var(--amber-600)':'var(--green-600)'}">${formatMoney(remaining)}</div></div>
+        <div class="detail-item"><div class="label">Ejecución</div><div class="value"><div class="pago-bar" style="width:200px;"><div class="pago-bar-fill" style="width:${pct}%"></div></div> ${pct}%</div></div>
+      </div>
+      ${(t.payments||[]).length?(t.payments||[]).map(p=>`<div class="payment-row"><span class="status-dot paid"></span><span style="flex:1">${p.concept||'Pago'}</span><span style="font-weight:600">${formatMoney(p.amount)}</span><span style="color:var(--gray-400)">${formatDate(p.date)}</span></div>`).join(''):'<div style="color:var(--gray-400);font-size:13px;">Sin pagos</div>'}
+    </div>
+    <div class="detail-section"><h3>&#128200; Resultados y Observaciones <button class="btn btn-sm btn-secondary" style="float:right" onclick="openResultModal('${t.id}')">+ Agregar</button></h3>
+      ${(t.results||[]).length?[...(t.results||[])].reverse().map(r=>`<div class="result-entry"><div class="date">${formatDate(r.date)} &middot; ${r.type}</div><div class="text">${r.text}</div></div>`).join(''):'<div style="color:var(--gray-400);font-size:13px;">Sin resultados</div>'}
+    </div>
+    <div class="detail-section"><h3>&#128206; Archivos Adjuntos (Google Drive) <button class="btn btn-sm btn-secondary" style="float:right" onclick="openDriveLinkModal('${t.id}')">+ Agregar Link</button></h3>
+      ${(t.driveLinks||[]).length?(t.driveLinks||[]).map((dl,i)=>`<div class="drive-link-item"><div class="drive-link-icon">${dl.type==='Protocolo'?'&#128203;':'&#128196;'}</div><a href="${dl.url}" target="_blank">${dl.name}</a><span style="color:var(--gray-400);font-size:11px;">${dl.type||''}</span><button class="btn-icon" onclick="removeDriveLink('${t.id}',${i})" title="Quitar" style="color:var(--red-600);">&#128465;</button></div>`).join(''):'<div style="color:var(--gray-400);font-size:13px;">Sin archivos. Subí tus archivos a Google Drive y agregá el link acá.</div>'}
+    </div>
+    ${t.notes?`<div class="detail-section"><h3>&#128221; Notas</h3><p style="font-size:13px;color:var(--gray-600);">${t.notes}</p></div>`:''}`;
+  document.getElementById('detailBody').innerHTML=html;openModal('detailModal');
+}
+
+// ==================== RESULTS / PAYMENTS / DRIVE LINKS ====================
+function openResultModal(id){resultTrialId=id;document.getElementById('r_date').value=new Date().toISOString().split('T')[0];document.getElementById('r_text').value='';openModal('resultModal');}
+
+async function saveResult(){
+  const text=document.getElementById('r_text').value.trim();if(!text){toast('Escribí una descripción');return;}
+  const t=trials.find(x=>x.id===resultTrialId);if(!t)return;if(!t.results)t.results=[];
+  t.results.push({date:document.getElementById('r_date').value,type:document.getElementById('r_type').value,text});
+  try{await apiPost('update',{data:t});closeModal('resultModal');toast('Resultado guardado');await loadTrials();openDetailModal(resultTrialId);}catch(e){toast('Error: '+e.message);}
+}
+
+function openPaymentModal(id){paymentTrialId=id;document.getElementById('p_date').value=new Date().toISOString().split('T')[0];document.getElementById('p_amount').value='';document.getElementById('p_concept').value='';openModal('paymentModal');}
+
+async function savePayment(){
+  const amount=parseFloat(document.getElementById('p_amount').value);if(!amount||amount<=0){toast('Ingresá un monto válido');return;}
+  const t=trials.find(x=>x.id===paymentTrialId);if(!t)return;if(!t.payments)t.payments=[];
+  t.payments.push({date:document.getElementById('p_date').value,amount,concept:document.getElementById('p_concept').value});
+  t.paid=(t.paid||0)+amount;
+  try{await apiPost('update',{data:t});closeModal('paymentModal');toast('Pago registrado');await loadTrials();openDetailModal(paymentTrialId);}catch(e){toast('Error: '+e.message);}
+}
+
+function openDriveLinkModal(id){driveLinkTrialId=id;document.getElementById('dl_name').value='';document.getElementById('dl_url').value='';document.getElementById('dl_type').value='Protocolo';openModal('driveLinkModal');}
+
+async function saveDriveLink(){
+  const name=document.getElementById('dl_name').value.trim();const url=document.getElementById('dl_url').value.trim();
+  if(!name||!url){toast('Completá nombre y URL');return;}
+  const t=trials.find(x=>x.id===driveLinkTrialId);if(!t)return;if(!t.driveLinks)t.driveLinks=[];
+  t.driveLinks.push({name,url,type:document.getElementById('dl_type').value});
+  try{await apiPost('update',{data:t});closeModal('driveLinkModal');toast('Link agregado');await loadTrials();openDetailModal(driveLinkTrialId);}catch(e){toast('Error: '+e.message);}
+}
+
+async function removeDriveLink(trialId,idx){
+  const t=trials.find(x=>x.id===trialId);if(!t||!t.driveLinks)return;
+  if(!confirm(`¿Quitar "${t.driveLinks[idx].name}"?`))return;
+  t.driveLinks.splice(idx,1);
+  try{await apiPost('update',{data:t});toast('Link eliminado');await loadTrials();openDetailModal(trialId);}catch(e){toast('Error: '+e.message);}
+}
+
+// ==================== EXPORT CSV ====================
+function exportCSV(){
+  const ft=getFilteredTrials();let csv='Código,Ensayo,Cultivo,Tipo,Institución,Contacto,Email,Localidad,Estado,Campaña,Siembra,Cosecha,Entrega Resultados,Próximo Hito,Fecha Hito,Presupuesto,Pagado,Pendiente,Notas\n';
+  ft.forEach(t=>{const row=[t.code,t.name,t.crop,t.type,t.institution,t.contact,t.email,t.location,t.status,t.campaign,t.dateSiembra,t.dateCosecha,t.dateResults,t.nextMilestone,t.nextMilestoneDate,t.budget,t.paid,(t.budget||0)-(t.paid||0),t.notes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`);csv+=row.join(',')+'\n';});
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`ensayos_${new Date().toISOString().split('T')[0]}.csv`;a.click();URL.revokeObjectURL(url);toast('CSV exportado');
+}
+
+// ==================== INIT ====================
+document.getElementById('campaignSelect').addEventListener('input', renderAll);
+document.getElementById('campaignSelect').addEventListener('change', renderAll);
+
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target!==el)return;if(el.id==='trialModal'){const h=document.getElementById('f_code').value.trim()||document.getElementById('f_name').value.trim();if(h&&!confirm('¿Cerrar sin guardar?'))return;}closeModal(el.id);});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const tm=document.getElementById('trialModal');if(tm.classList.contains('active')){const h=document.getElementById('f_code').value.trim()||document.getElementById('f_name').value.trim();if(h&&!confirm('¿Cerrar sin guardar?'))return;}document.querySelectorAll('.modal-overlay.active').forEach(el=>closeModal(el.id));}});
+
+loadTrials();
+</script>
+</body>
+</html>
