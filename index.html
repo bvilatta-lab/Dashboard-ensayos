@@ -382,8 +382,11 @@
 // ============================================================
 // CONFIGURACIÓN - Pegá acá la URL de tu Google Apps Script
 // ============================================================
-const API_URL = 'https://script.google.com/a/macros/peman.com.ar/s/AKfycbwC2E2zT5hJ637CXkGNZN0Mz-qdSJAvWCuvZ7IzL1kd-LmN2lpU_9wiupqNvAmRknMBag/exec'; // <-- PEGAR URL ACA después del deploy
+let API_URL = 'https://script.google.com/a/macros/peman.com.ar/s/AKfycbwC2E2zT5hJ637CXkGNZN0Mz-qdSJAvWCuvZ7IzL1kd-LmN2lpU_9wiupqNvAmRknMBag/exec'; // <-- PEGAR URL ACA después del deploy
 // ============================================================
+// Fix automático: cuentas Google Workspace generan URLs con /a/macros/DOMINIO/
+// que no soportan CORS. Se convierte a la URL estándar.
+API_URL = API_URL.replace(/\/a\/macros\/[^/]+\//, '/macros/');
 
 const STATUS_CLASSES = {
   'Planificado':'badge-planificado','Siembra':'badge-siembra','Crecimiento':'badge-crecimiento',
